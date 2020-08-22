@@ -1,0 +1,34 @@
+{
+  "name": "sunshine",
+  "template": {
+    "extends": [
+      "nodeEslint"
+    ]
+  },
+  "version": "0.0.1",
+  "description": "nixOS Update Daemon",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -A",
+    "cov": "nyc mocha",
+    "lint": "eslint .",
+    "fix": "eslint --fix ."
+  },
+  "keywords": [
+    "nixos",
+    "update",
+    "daemon"
+  ],
+  "author": "Maciej Krüger <mkg20001@gmail.com>",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "eslint": "*",
+    "eslint-config-aegir-standalone": "*",
+    "eslint-config-oclif": "*",
+    "mocha": "*",
+    "nyc": "*"
+  },
+  "dependencies": {
+    "mkgs-tool": "^0.1.10"
+  }
+}

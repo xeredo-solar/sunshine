@@ -1,0 +1,19 @@
+{
+  "overrides": [
+    {
+      "files": [
+        "test/**/*.js"
+      ],
+      "env": {
+        "mocha": true
+      }
+    }
+  ],
+  "extends": [
+    "oclif",
+    "aegir-standalone"
+  ],
+  "rules": {
+    "no-await-in-loop": "off"
+  }
+}
