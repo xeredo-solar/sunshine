@@ -29,6 +29,9 @@
     "nyc": "*"
   },
   "dependencies": {
-    "mkgs-tool": "^0.1.10"
+    "joi": "^17.2.1",
+    "mkg-bin-gen": "^0.1.4",
+    "mkgs-tool": "^0.1.10",
+    "scriptrr": "^0.1.5"
   }
 }
