@@ -29,9 +29,12 @@
     "nyc": "*"
   },
   "dependencies": {
+    "cron": "^1.8.2",
+    "cron-parser": "^2.16.3",
     "joi": "^17.2.1",
     "mkg-bin-gen": "^0.1.4",
     "mkgs-tool": "^0.1.10",
+    "node-cron": "^2.0.3",
     "scriptrr": "^0.1.5"
   }
 }

@@ -40,7 +40,8 @@ const validateReal = Joi.object({
       ...upgradeCommon
     }),
     gc
-  })
+  }),
+  cooldownMsAfterBoot: Joi.number().integer().min(0).max(3600 * 60 * 1000).default(3600 * 5 * 1000) // 5 mins after boot first run
 })
 
 require('mkg-bin-gen')(
