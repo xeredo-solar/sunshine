@@ -1,8 +1,8 @@
 gc:
-  onInterval: true # true=daily, false=never or string containing cron interval
-  onLowSpace: 2147483648 # 2gb, 0 to disable, will trigger every minute and check threshold on /nix/store partition
+  onInterval: '* * * * *' # always trigger
+  onLowSpace: 214748364800 # always trigger
   keepDays: 7 # how many days to keep old, unused stuff arround for rollbacks
-  maxFree: 0 # _only_ free _up to_ this much space, 0=ignore
+  maxFree: 214748364800 # don't actually clean
 system:
   gc: {} # override the gc from above
   upgrade: # affects nixos-rebuild
@@ -19,7 +19,7 @@ system:
 user:
   gc: {} # override the gc from above
   upgrade: # affects nix-env
-    silentFetch: true # fetch channels silently, true=daily false=never or string in cron interval
-    silentPrepare: true # prefetch already built derivations from cache but don't build anything just yet, will not run on paid networks (e.g. mobile)
-    forceSilentPrepare: false # always run silentPrepare
-cooldownMsAfterBoot: 18000000 # 5 min
+    silentFetch: '* * * * *' # always trigger
+    silentPrepare: '* * * * *' # always trigger
+    forceSilentPrepare: true # always trigger
+cooldownMsAfterBoot: 1 # immediatly run stuff

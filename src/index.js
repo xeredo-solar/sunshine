@@ -2,7 +2,7 @@
 
 const path = require('path')
 const scripts = require('scriptrr')({
-  files: [path.join(__dirname, 'scripts')],
+  files: [path.join(__dirname, 'scripts', '*.sh')],
   showOutput: true,
   options: {}
 })
@@ -33,12 +33,14 @@ function createTask (storage, taskId, taskInterval, taskFunction) {
     try {
       log('running %o', taskId)
       await taskFunction()
+      log('finished %o', taskId)
     } catch (error) {
       console.error(error.stack.toString())
       setTimeout(onCron, 3600 * 1000 * 5) // 5min cooldown, TODO: exponential backoff
       return
     }
 
+    log('%o success', taskId)
     storage[taskId] = Date.now()
   }
 
@@ -56,34 +58,32 @@ function spaceThreshold (threshold, location, onBelow) {
   }
 }
 
-function setupGc (config, storage, env) {
-  config = config[env]
+function setupGc (config, storage) {
+  config = config.system.gc
 
   let cur
 
   const gcParams = []
 
-  if ((cur = config.gc.keepDerivations)) {
-    gcParams.push('--delete-older-than', cur)
+  if ((cur = config.keepDays)) {
+    gcParams.push('--delete-older-than', `${cur}d`)
   } else {
     gcParams.push('--delete-old')
   }
 
-  if ((cur = config.gc.onLowSpace)) {
+  if ((cur = config.onLowSpace)) {
     gcParams.push('--max-free', cur)
   }
 
-  const doGc = async () => {
-    return scripts.collectGarbage(...gcParams)
-  }
+  const doGc = () => scripts.collectGarbage(...gcParams)
 
-  if ((cur = config.gc.onInterval)) {
+  if ((cur = config.onInterval)) {
     if (cur === true) cur = '0 0 * * *'
-    createTask(storage, env + '.gc.daily', cur, doGc)
+    createTask(storage, 'system.gc.daily', cur, doGc)
   }
 
-  if ((cur = config.gc.onLowSpace)) {
-    createTask(storage, env + '.gc.lowSpace', '0 */5 * * *', spaceThreshold(cur, '/nix/store', gcParams))
+  if ((cur = config.onLowSpace)) {
+    createTask(storage, 'system.gc.lowSpace', '0 */5 * * *', spaceThreshold(cur, '/nix/store', gcParams))
   }
 }
 
@@ -97,6 +97,7 @@ function Storage (path) {
     set: (target, key, value) => {
       target[key] = value
       queueSave()
+      return true
     }
   })
 }
@@ -112,11 +113,6 @@ module.exports = async config => {
 
   // let cur
 
-  // onInterval: Joi.alternatives().try(Joi.boolean().default(true), Joi.string()), // true for daily, otherwise string for interval
-  // onLowSpace: Joi.number().integer().default(1024 * 1024 * 1024 * 2), // 2gb min free
-  // keepDerivations: Joi.number().integer().default(2),
-  // maxFree: Joi.number().integer().default(0)
-
-  setupGc(config, storage, 'system')
+  setupGc(config, storage)
   // setupGc(config, storage, 'user') // TODO: make this yield different jobs that run in user-space
 }
