@@ -1,12 +1,5 @@
 'use strict'
 
-const path = require('path')
-const scripts = require('scriptrr')({
-  files: [path.join(__dirname, 'scripts', '*.sh')],
-  showOutput: true,
-  options: {}
-})
-
 const debug = require('debug')
 const log = debug('sunshine')
 
@@ -14,11 +7,9 @@ const cron = require('node-cron')
 const cronParser = require('cron-parser')
 
 const {
-  read,
-  mkTmp,
-  processDryRun,
-  withTmp
-} = require('./util')
+  gc,
+  spaceThreshold
+} = require('./routines')
 
 function createTask (storage, taskId, taskInterval, taskFunction) {
   log('creating task %o', taskId)
@@ -42,7 +33,7 @@ function createTask (storage, taskId, taskInterval, taskFunction) {
       await taskFunction()
       log('finished %o', taskId)
     } catch (error) {
-      console.error(error.stack.toString())
+      console.error(error.stack.toString()) // eslint-disable-line no-console
       setTimeout(onCron, 3600 * 1000 * 5) // 5min cooldown, TODO: exponential backoff
       return
     }
@@ -74,30 +65,12 @@ function Storage (path) {
   })
 }
 
-function spaceThreshold (threshold, location, onBelow) {
-  return async () => {
-
-  }
-}
-
 function setupGc (config, storage) {
   config = config.system.gc
 
   let cur
 
-  const gcParams = []
-
-  if ((cur = config.keepDays)) {
-    gcParams.push('--delete-older-than', `${cur}d`)
-  } else {
-    gcParams.push('--delete-old')
-  }
-
-  if ((cur = config.onLowSpace)) {
-    gcParams.push('--max-free', cur)
-  }
-
-  const doGc = () => scripts.collectGarbage(...gcParams)
+  const doGc = gc(config)
 
   if ((cur = config.onInterval)) {
     if (cur === true) cur = '0 0 * * *'
@@ -105,29 +78,8 @@ function setupGc (config, storage) {
   }
 
   if ((cur = config.onLowSpace)) {
-    createTask(storage, 'system.gc.lowSpace', '0 */5 * * *', spaceThreshold(cur, '/nix/store', gcParams))
+    createTask(storage, 'system.gc.lowSpace', '0 */5 * * *', spaceThreshold(cur, '/nix/store', doGc))
   }
-}
-
-async function dryRun (drv) {
-  return processDryRun(
-    await withTmp(p => scripts.dryRun(drv, p))
-  )
-}
-
-async function dryRunNixEnv () {
-  return processDryRun(
-    await withTmp(p => scripts.dryRunNixEnvUpdate(p))
-  )
-}
-
-async function systemDrv () {
-  const pathList = await withTmp(p => scripts.instantiateSystem(p))
-  return pathList.split('\n').filter(str => str.startsWith('/nix')).pop().trim()
-}
-
-async function prefetch (dry) {
-  await scripts.prefetch(...dry.fetched)
 }
 
 function setupSystemUpgrade () {
