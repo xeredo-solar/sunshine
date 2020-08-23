@@ -62,5 +62,7 @@ in
         Restart = "on-failure";
       };
     };
+
+    environment.etc."sunshine.yaml".text = cfg.extraConfig
   };
 }
