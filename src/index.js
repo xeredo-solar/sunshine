@@ -13,6 +13,13 @@ const log = debug('sunshine')
 const cron = require('node-cron')
 const cronParser = require('cron-parser')
 
+const {
+  read,
+  mkTmp,
+  processDryRun,
+  withTmp
+} = require('./util')
+
 function createTask (storage, taskId, taskInterval, taskFunction) {
   log('creating task %o', taskId)
 
@@ -52,6 +59,21 @@ function createTask (storage, taskId, taskInterval, taskFunction) {
   return cron.schedule(taskInterval, onCron, { scheduled: true })
 }
 
+function Storage (path) {
+  const data = {} // TODO: read initially from disk
+
+  const queueSave = () => {}
+
+  return new Proxy(data, {
+    get: (target, key) => target[key],
+    set: (target, key, value) => {
+      target[key] = value
+      queueSave()
+      return true
+    }
+  })
+}
+
 function spaceThreshold (threshold, location, onBelow) {
   return async () => {
 
@@ -87,19 +109,29 @@ function setupGc (config, storage) {
   }
 }
 
-function Storage (path) {
-  const data = {} // TODO: read initially from disk
+async function dryRun (drv) {
+  return processDryRun(
+    await withTmp(p => scripts.dryRun(drv, p))
+  )
+}
 
-  const queueSave = () => {}
+async function dryRunNixEnv () {
+  return processDryRun(
+    await withTmp(p => scripts.dryRunNixEnvUpdate(p))
+  )
+}
 
-  return new Proxy(data, {
-    get: (target, key) => target[key],
-    set: (target, key, value) => {
-      target[key] = value
-      queueSave()
-      return true
-    }
-  })
+async function systemDrv () {
+  const pathList = await withTmp(p => scripts.instantiateSystem(p))
+  return pathList.split('\n').filter(str => str.startsWith('/nix')).pop().trim()
+}
+
+async function prefetch (dry) {
+  await scripts.prefetch(...dry.fetched)
+}
+
+function setupSystemUpgrade () {
+
 }
 
 module.exports = async config => {
@@ -109,10 +141,7 @@ module.exports = async config => {
 
   const storage = await Storage() // bla
 
-  console.log(config)
-
-  // let cur
-
   setupGc(config, storage)
-  // setupGc(config, storage, 'user') // TODO: make this yield different jobs that run in user-space
+  setupSystemUpgrade()
+  // setupUserUpgrade()
 }
