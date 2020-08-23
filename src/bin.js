@@ -55,11 +55,11 @@ require('mkg-bin-gen')(
       validate: obj => {
       // NOTE: first we take user.gc & gc for ex, mix them, then Joi.validate, otherwise we end up with the defaults sparkled on both
 
-        if (obj.gc && obj.system.gc) {
+        if (obj && obj.gc && obj.system.gc) {
           obj.system.gc = Object.assign(Object.assign({}, obj.gc), obj.system.gc)
         }
 
-        if (obj.gc && obj.user.gc) {
+        if (obj && obj.gc && obj.user.gc) {
           obj.user.gc = Object.assign(Object.assign({}, obj.gc), obj.user.gc)
         }
 
