@@ -1,7 +1,7 @@
-{ mkNode }:
+{ mkNode, nodejs-14_x }:
 let
   makeNode = mkNode {
     root = ./.;
-    nodejs = pkgs.nodejs-14_x;
+    nodejs = nodejs-14_x;
   };
 in makeNode { }

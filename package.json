@@ -1,7 +1,12 @@
 {
   "name": "sunshine",
   "template": {
-    "extends": ["nodeEslint"]
+    "extends": [
+      "nodeEslint"
+    ],
+    "node": {
+      "noNodeLock": true
+    }
   },
   "version": "0.0.1",
   "description": "nixOS Update Daemon",
@@ -15,7 +20,11 @@
   "bin": {
     "sunshine": "src/bin.js"
   },
-  "keywords": ["nixos", "update", "daemon"],
+  "keywords": [
+    "nixos",
+    "update",
+    "daemon"
+  ],
   "author": "Maciej Krüger <mkg20001@gmail.com>",
   "license": "MPL-2.0",
   "devDependencies": {
