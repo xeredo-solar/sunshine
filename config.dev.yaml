@@ -6,9 +6,10 @@ gc:
 system:
   gc: {} # override the gc from above
   upgrade: # affects nixos-rebuild
-    silentFetch: true # fetch channels silently, true=daily false=never or string in cron interval
-    silentPrepare: true # prefetch already built derivations from cache but don't build anything just yet, will not run on paid networks (e.g. mobile)
-    forceSilentPrepare: false # always run silentPrepare
+    interval: true # always trigger
+    silentFetch: true # always trigger
+    silentPrepare: true # always trigger
+    forceSilentPrepare: true # always trigger
     silentApplyForNextBoot: true # build with nixos-rebuild boot so update gets applied on next boot
     notifyUpdateAvailable: true # make a notification to apply update during current boot
     rollback:
@@ -19,7 +20,8 @@ system:
 user:
   gc: {} # override the gc from above
   upgrade: # affects nix-env
-    silentFetch: '* * * * *' # always trigger
-    silentPrepare: '* * * * *' # always trigger
+    interval: true # always trigger
+    silentFetch: true # always trigger
+    silentPrepare: true # always trigger
     forceSilentPrepare: true # always trigger
 cooldownMsAfterBoot: 1 # immediatly run stuff

@@ -10,8 +10,9 @@ const gc = Joi.object({ // seperate options in user/system override it - upgrade
 })
 
 const upgradeCommon = {
-  silentFetch: Joi.alternatives().try(Joi.boolean().default(true), Joi.string()), // fetch channels silently, true (daily) or interval in cron format
-  silentPrepare: Joi.alternatives().try(Joi.boolean().default(true), Joi.string()), // note that this will not trigger if we have a pay-per-usage/mobile connection
+  interval: Joi.alternatives().try(Joi.boolean().default(true), Joi.string()), // upgrade interval, true (daily) or interval in cron format
+  silentFetch: Joi.boolean().default(true), // fetch channels silently instead of asking
+  silentPrepare: Joi.boolean().default(true), // note that this will not trigger if we have a pay-per-usage/mobile connection
   forceSilentPrepare: Joi.boolean().default(false) // even run prepare if we are on a paid connection
 }
 
@@ -25,7 +26,6 @@ const validateReal = Joi.object({
       ...upgradeCommon,
       silentApplyForNextBoot: Joi.boolean().default(true), // nixos-rebuild boot
       notifyUpdateAvailable: Joi.boolean().default(true), // notify user and let user apply during current boot
-      rollbackDetection: Joi.boolean().default(true), // notifi user if we think something went wrong after the update happened (automatic checks failed)
       rollback: Joi.object({
         checks: Joi.object({
           sanityCheck: Joi.boolean().default(true),

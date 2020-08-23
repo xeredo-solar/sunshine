@@ -71,6 +71,20 @@ module.exports = {
     await scripts.prefetch(...dry.fetched)
   },
 
+  async build (...drv) {
+    await scripts.build(...drv)
+  },
+
+  async nixosRebuild (op) {
+    await scripts.nixosRebuild(op)
+  },
+
+  fetchChannels (user) {
+    const s = user ? users[user] : scripts
+
+    return s.channelFetch()
+  },
+
   doGc (params) {
     return scripts.collectGarbage(...params)
   },

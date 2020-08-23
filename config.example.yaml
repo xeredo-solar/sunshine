@@ -4,9 +4,9 @@ gc:
   keepDays: 7 # how many days to keep old, unused stuff arround for rollbacks
   maxFree: 0 # _only_ free _up to_ this much space, 0=ignore
 system:
-  gc: {} # override the gc from above
   upgrade: # affects nixos-rebuild
-    silentFetch: true # fetch channels silently, true=daily false=never or string in cron interval
+    interval: true # true=daily false=never or string containg cron interval
+    silentFetch: true # fetch channels silently instead of asking
     silentPrepare: true # prefetch already built derivations from cache but don't build anything just yet, will not run on paid networks (e.g. mobile)
     forceSilentPrepare: false # always run silentPrepare
     silentApplyForNextBoot: true # build with nixos-rebuild boot so update gets applied on next boot
@@ -17,9 +17,9 @@ system:
         grubFlag: false # add settings to grub to auto-rollback
       allowAuto: critical # never, critical, always - change when auto-rollbacks are done
 user:
-  gc: {} # override the gc from above
   upgrade: # affects nix-env
-    silentFetch: true # fetch channels silently, true=daily false=never or string in cron interval
+    interval: true # true=daily false=never or string containg cron interval
+    silentFetch: true # fetch channels silently instead of asking
     silentPrepare: true # prefetch already built derivations from cache but don't build anything just yet, will not run on paid networks (e.g. mobile)
     forceSilentPrepare: false # always run silentPrepare
 cooldownMsAfterBoot: 18000000 # 5 min

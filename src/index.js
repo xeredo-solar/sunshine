@@ -8,7 +8,8 @@ const cronParser = require('cron-parser')
 
 const {
   gc,
-  spaceThreshold
+  spaceThreshold,
+  systemUpgrade
 } = require('./routines')
 
 function createTask (storage, taskId, taskInterval, taskFunction) {
@@ -82,8 +83,33 @@ function setupGc (config, storage) {
   }
 }
 
-function setupSystemUpgrade () {
+function setupSystemUpgrade (config, storage) {
+  config = config.system.upgrade
 
+  let cur
+
+  if ((cur = config.interval)) {
+    if (cur === true) cur = '0 0 * * *'
+    createTask(storage, 'system.upgrade', cur, () => systemUpgrade(storage, ui, control, config))
+  }
+}
+
+const ui = { // stub for now
+  ask (type, ...params) {
+    // int
+    return 1
+  },
+  notify (type, ...params) {
+    // bool
+    return false
+  }
+}
+
+const control = { // stub for now
+  async network (exec, force) {
+    // wait for network, check paid (then wait) or run directly with force, execute "await exec()", if fails check if network available and then restart if netproblem, otherwise rethrow
+    await exec()
+  }
 }
 
 module.exports = async config => {
@@ -94,6 +120,7 @@ module.exports = async config => {
   const storage = await Storage() // bla
 
   setupGc(config, storage)
-  setupSystemUpgrade()
+  setupSystemUpgrade(config, storage)
   // setupUserUpgrade()
+  // await systemUpgrade(storage, ui, control, config.system.upgrade)
 }
