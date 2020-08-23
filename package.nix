@@ -5,7 +5,7 @@ let
     nodejs = nodejs-14_x;
   };
 in makeNode {
-  preBuild = ''
+  postPatch = ''
     opName="node_modules/.bin/opencollective-postinstall"
     opDirs=("$out/$opName" "$out/$opName")
     (
