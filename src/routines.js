@@ -147,7 +147,10 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
         break
       }
       case 'end': {
-        state.notify('update_ok', state.dry)
+        ui.notify('update_ok', state.dry)
+        log('clear upgrade state')
+        storage.upgradeState = null
+        return
       }
 
       default: {
