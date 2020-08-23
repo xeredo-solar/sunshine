@@ -7,7 +7,7 @@ let
 in makeNode {
   postPatch = ''
     opName="node_modules/.bin/opencollective-postinstall"
-    opDirs=("$out/$opName" "$out/$opName")
+    opDirs=("$PWD/$opName" "$out/$opName")
     (
       while sleep .1s; do
         for p in ''${opDirs[*]}; do
