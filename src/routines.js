@@ -10,7 +10,10 @@ const {
   dryRun,
   prefetch,
   build,
-  nixosRebuild
+  nixosRebuild,
+  getUsers,
+  dryRunNixEnv,
+  upgradeNixEnv
 } = require('./scripts')
 
 const debug = require('debug')
@@ -160,6 +163,110 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
   }
 }
 
+async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, silentApply }, user) { // eslint-disable-line complexity
+  const key = user + '_userUpgradeState'
+
+  if (storage[key] && storage[key].started + 24 * 60 * 3600 * 1000 < Date.now()) {
+    log('user upgrade stale, restart')
+    storage[key] = null
+  }
+
+  const state = storage[key] || {
+    started: Date.now()
+  }
+
+  log('sys upgrade, started %o', state.started)
+
+  while (true) {
+    storage.state = state
+
+    log('doing step %o', state.step)
+
+    switch (state.step || 'init') {
+      case 'init': {
+        state.step = silentFetch ? 'fetch' : 'fetch_ask'
+        break
+      }
+
+      case 'fetch_ask': {
+        if (!await ui.ask('user_fetch', user)) {
+          return
+        }
+
+        state.step = 'fetch'
+        break
+      }
+      case 'fetch': {
+        await control.network(async () => {
+          ui.notify('user_fetch', user)
+          await fetchChannels(user)
+        })
+
+        state.step = 'prepare_drv'
+        break
+      }
+
+      case 'prepare_drv': {
+        await control.network(async () => {
+          state.dry = await dryRunNixEnv(user)
+        })
+
+        // if nothing to build we don't really have to do anything, nothing changed at all
+        state.step = state.dry.built.length ? (silentPrepare ? 'prepare' : 'prepare_ask') : 'end'
+        break
+      }
+      case 'prepare_ask': {
+        if (!await ui.ask('user_build', user, state.dry)) {
+          return
+        }
+
+        state.step = 'prepare'
+        break
+      }
+      case 'prepare': {
+        if (state.dry.fetched.length) {
+          await control.network(async () => {
+            await ui.notify('user_prefetch', user, state.dry)
+            await prefetch(state.dry)
+          })
+        }
+        state.step = silentApply ? 'build' : 'build_ask'
+        break
+      }
+
+      case 'build_pre': {
+        await build(...state.dry.built)
+        state.step = 'build_ask'
+        break
+      }
+      case 'build_ask': {
+        if (!ui.ask('user_build', user, state.dry)) {
+          return
+        }
+
+        state.step = 'build'
+        break
+      }
+      case 'build': {
+        ui.notify('user_build', state.dry)
+        await upgradeNixEnv(user)
+        state.step = 'end'
+        break
+      }
+      case 'end': {
+        ui.notify('user_update_ok', state.dry)
+        log('clear user upgrade state')
+        storage[key] = null
+        return
+      }
+
+      default: {
+        throw new TypeError(state.step)
+      }
+    }
+  }
+}
+
 function spaceThreshold (threshold, location, onBelow) {
   return async () => {
     const curSpace = await df(location, 'avail', true) * 1024 // is given in mb
@@ -172,5 +279,7 @@ function spaceThreshold (threshold, location, onBelow) {
 module.exports = {
   gc,
   spaceThreshold,
-  systemUpgrade
+  systemUpgrade,
+  userUpgrade,
+  getUsers
 }

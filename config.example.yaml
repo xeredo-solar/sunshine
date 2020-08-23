@@ -21,5 +21,6 @@ user:
     interval: true # true=daily false=never or string containg cron interval
     silentFetch: true # fetch channels silently instead of asking
     silentPrepare: true # prefetch already built derivations from cache but don't build anything just yet, will not run on paid networks (e.g. mobile)
+    silentApply: true # silently build and apply
     forceSilentPrepare: false # always run silentPrepare
 cooldownMsAfterBoot: 18000000 # 5 min

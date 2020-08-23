@@ -38,7 +38,8 @@ const validateReal = Joi.object({
   }),
   user: Joi.object({
     upgrade: Joi.object({
-      ...upgradeCommon
+      ...upgradeCommon,
+      silentApply: Joi.boolean().default(true) // automagically upgrade env
     }),
     gc
   }),

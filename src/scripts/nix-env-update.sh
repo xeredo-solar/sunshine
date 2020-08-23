@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-exec nix-env -u
+nix-env -u

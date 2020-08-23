@@ -6,7 +6,7 @@ gc:
 system:
   gc: {} # override the gc from above
   upgrade: # affects nixos-rebuild
-    interval: true # always trigger
+    interval: '* * * * *' # always trigger
     silentFetch: true # always trigger
     silentPrepare: true # always trigger
     forceSilentPrepare: true # always trigger
@@ -20,7 +20,7 @@ system:
 user:
   gc: {} # override the gc from above
   upgrade: # affects nix-env
-    interval: true # always trigger
+    interval: '* * * * *' # always trigger
     silentFetch: true # always trigger
     silentPrepare: true # always trigger
     forceSilentPrepare: true # always trigger

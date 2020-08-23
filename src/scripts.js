@@ -40,7 +40,8 @@ read('/etc/passwd').split('\n').filter(l => Boolean(l.trim())).map(l => {
     uid: user.uid,
     gid: user.gid,
     env: Object.assign(Object.assign({}, process.env), {
-      HOME: user.home
+      HOME: user.home,
+      NIX_PATH: user.home + '/.nix-defexpr/channels'
     })
   })
 })
@@ -60,6 +61,10 @@ module.exports = {
     return processDryRun(
       await withTmp(p => users[user].dryRunNixEnvUpdate(p))
     )
+  },
+
+  upgradeNixEnv (user) {
+    return users[user].nixEnvUpdate()
   },
 
   async systemDrv () {
