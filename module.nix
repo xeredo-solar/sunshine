@@ -63,6 +63,6 @@ in
       };
     };
 
-    environment.etc."sunshine.yaml".text = cfg.extraConfig
+    environment.etc."sunshine.yaml".text = cfg.extraConfig;
   };
 }
