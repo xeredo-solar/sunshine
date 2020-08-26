@@ -3,7 +3,9 @@
 const debug = require('debug')
 const log = debug('sunshine')
 
-const cron = require('node-cron')
+const path = require('path')
+const fs = require('fs')
+const mkdirp = require('mkdirp').sync
 
 const {
   gc,
@@ -16,9 +18,35 @@ const {
 const createTask = require('./cron')
 
 function Storage (path) {
-  const data = {} // TODO: read initially from disk
+  log('loading %s', path)
 
-  const queueSave = () => {}
+  let data = {}
+
+  try {
+    if (fs.existsSync(path)) {
+      data = JSON.parse(String(fs.readFileSync(path)))
+    }
+  } catch (error) {
+    log(error)
+    log('using blank value')
+  }
+
+  let timeout
+
+  function save () {
+    log('saving %s', path)
+    fs.writeFileSync(path + '~', JSON.stringify(data))
+    fs.renameSync(path + '~', path)
+
+    timeout = null
+  }
+
+  const queueSave = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(save, 5 * 1000)
+  }
 
   return new Proxy(data, {
     get: (target, key) => target[key],
@@ -92,7 +120,8 @@ module.exports = async config => {
     throw new Error("Running as non-root user, that doesn't work. If you're worried, use the service module. It's sandboxed!")
   }
 
-  const storage = await Storage() // bla
+  mkdirp(config.storage)
+  const storage = Storage(path.join(config.storage, 'state.json')) // bla
 
   setupGc(config, storage)
   setupSystemUpgrade(config, storage)

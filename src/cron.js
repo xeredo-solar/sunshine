@@ -55,6 +55,7 @@ module.exports = function createTask (storage, taskId, taskInterval, taskFunctio
     next: storage[taskId] || next(),
     ping: () => {
       task.next = next()
+      storage[taskId] = next()
       onCron()
     },
     id: taskId

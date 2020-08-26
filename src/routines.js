@@ -55,7 +55,7 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
   log('sys upgrade, started %o', state.started)
 
   while (true) {
-    storage.state = state
+    storage.upgradeState = state
 
     log('doing step %o', state.step)
 
@@ -183,7 +183,7 @@ async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, 
   log('sys upgrade, started %o', state.started)
 
   while (true) {
-    storage.state = state
+    storage[key] = state
 
     log('doing step %o', state.step)
 
