@@ -7,8 +7,14 @@ const mkdirp = require('mkdirp').sync
 const rimraf = require('rimraf').sync
 
 const read = file => String(fs.readFileSync(file))
+
+const TMPDIR = path.join(os.tmpdir(), 'sunshine')
+// rimraf(TMPDIR)
+mkdirp(TMPDIR)
+fs.chmodSync(TMPDIR, 0o777)
+
 const mkTmp = folder => {
-  const tmpPath = path.join(os.tmpdir(), String(Math.random()))
+  const tmpPath = path.join(TMPDIR, String(Math.random()))
 
   if (folder) {
     mkdirp(tmpPath)
@@ -45,6 +51,15 @@ module.exports = {
   read,
   mkTmp,
   withTmp,
+  cacheTmp () {
+    const tmp = mkTmp(true)
+    const arg = path.join(tmp.p, 'cache')
+    fs.chmodSync(tmp.p, 0o777)
+    return {
+      arg,
+      clear: tmp.c
+    }
+  },
   processDryRun (data) {
     const lines = data.split('\n').filter(d => Boolean(d.trim()))
 

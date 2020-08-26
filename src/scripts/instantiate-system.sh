@@ -2,6 +2,6 @@
 
 set -euo pipefail
 
-OUT="$1"
+SYM="$1"
 
-nix-instantiate "<nixpkgs/nixos>" -A system > "$OUT"
+nix-instantiate --indirect --add-root "$SYM" "<nixpkgs/nixos>" -A system

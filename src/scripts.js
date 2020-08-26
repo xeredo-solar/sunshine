@@ -2,6 +2,7 @@
 
 // every function that directly uses a script
 
+const fs = require('fs')
 const path = require('path')
 const scriptrr = require('scriptrr')
 const scriptCtx = (options = {}) =>
@@ -16,7 +17,9 @@ const scripts = scriptCtx()
 const {
   read,
   processDryRun,
-  withTmp
+  withTmp,
+  mkTmp,
+  cacheTmp
 } = require('./util')
 
 const users = {}
@@ -68,16 +71,24 @@ module.exports = {
   },
 
   async systemDrv () {
-    const pathList = await withTmp(p => scripts.instantiateSystem(p))
-    return pathList.split('\n').filter(str => str.startsWith('/nix')).pop().trim()
+    const tmp = mkTmp()
+    await scripts.instantiateSystem(tmp.p)
+    return {
+      drv: fs.realpathSync(tmp.p),
+      clear: tmp.c
+    }
   },
 
   async prefetch (dry) {
-    await scripts.prefetch(...dry.fetched)
+    const { arg, clear } = cacheTmp()
+    await scripts.prefetch(arg, ...dry.fetched)
+    return clear
   },
 
   async build (...drv) {
-    await scripts.build(...drv)
+    const { arg, clear } = cacheTmp()
+    await scripts.build(arg, ...drv)
+    return clear
   },
 
   async nixosRebuild (op) {

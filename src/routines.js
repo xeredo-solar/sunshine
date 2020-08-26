@@ -2,6 +2,8 @@
 
 // functions that use functions from scripts.js to provide higher level routines
 
+/* eslint-disable require-atomic-updates */
+
 const {
   doGc,
   df,
@@ -84,7 +86,7 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
       case 'prepare_drv': {
         state.drv = await systemDrv()
         await control.network(async () => {
-          state.dry = await dryRun(state.drv)
+          state.dry = await dryRun(state.drv.drv)
         })
 
         // if nothing to build we don't really have to do anything, nothing changed at all
@@ -103,7 +105,7 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
         if (state.dry.fetched.length) {
           await control.network(async () => {
             await ui.notify('prefetch', state.dry)
-            await prefetch(state.dry)
+            state.prefetchClear = await prefetch(state.dry)
           })
         }
         state.step = 'build_pre'
@@ -112,7 +114,7 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
 
       case 'build_pre': {
         await ui.notify('build', state.dry)
-        await build(state.drv)
+        state.buildClear = await build(state.drv.drv)
         state.step = silentApplyForNextBoot ? 'build_ask' : 'build_boot'
         break
       }
@@ -150,6 +152,9 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
         break
       }
       case 'end': {
+        if (state.prefetchClear) state.prefetchClear()
+        if (state.buildClear) state.buildClear()
+        if (state.drv) state.drv.clear()
         ui.notify('update_ok', state.dry)
         log('clear upgrade state')
         storage.upgradeState = null
@@ -227,7 +232,7 @@ async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, 
         if (state.dry.fetched.length) {
           await control.network(async () => {
             await ui.notify('user_prefetch', user, state.dry)
-            await prefetch(state.dry)
+            state.prefetchClear = await prefetch(state.dry)
           })
         }
         state.step = silentApply ? 'build' : 'build_ask'
@@ -235,7 +240,7 @@ async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, 
       }
 
       case 'build_pre': {
-        await build(...state.dry.built)
+        state.buildClear = await build(...state.dry.built)
         state.step = 'build_ask'
         break
       }
@@ -254,6 +259,8 @@ async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, 
         break
       }
       case 'end': {
+        if (state.prefetchClear) state.prefetchClear()
+        if (state.buildClear) state.buildClear()
         ui.notify('user_update_ok', state.dry)
         log('clear user upgrade state')
         storage[key] = null

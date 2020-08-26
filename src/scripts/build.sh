@@ -2,4 +2,7 @@
 
 set -euo pipefail
 
-LC_ALL=C nix-build "$@"
+SYM="$1"
+shift
+
+LC_ALL=C nix-build --out-link "$SYM" "$@"

@@ -4,7 +4,6 @@ const debug = require('debug')
 const log = debug('sunshine')
 
 const cron = require('node-cron')
-const cronParser = require('cron-parser')
 
 const {
   gc,
@@ -14,44 +13,7 @@ const {
   getUsers
 } = require('./routines')
 
-function createTask (storage, taskId, taskInterval, taskFunction) {
-  log('creating task %o', taskId)
-
-  const lastCycle = storage[taskId] || Date.now() // first time init shouldn't "blow up"
-  const parsedInterval = cronParser.parseExpression(taskInterval)
-
-  let lock
-
-  const onCron = async () => {
-    if (lock) {
-      await lock
-    } else {
-      lock = _onCron()
-    }
-  }
-
-  const _onCron = async () => {
-    try {
-      log('running %o', taskId)
-      await taskFunction()
-      log('finished %o', taskId)
-    } catch (error) {
-      console.error(error.stack.toString()) // eslint-disable-line no-console
-      setTimeout(onCron, 3600 * 1000 * 5) // 5min cooldown, TODO: exponential backoff
-      return
-    }
-
-    log('%o success', taskId)
-    storage[taskId] = Date.now()
-  }
-
-  if (parsedInterval.prev().getTime() > lastCycle) {
-    log('immediate scheudling')
-    onCron()
-  }
-
-  return cron.schedule(taskInterval, onCron, { scheduled: true })
-}
+const createTask = require('./cron')
 
 function Storage (path) {
   const data = {} // TODO: read initially from disk
