@@ -57,6 +57,7 @@ in
       path = [ pkgs.sunshine config.nix.package ];
 
       script = ''
+        export HOME=/root
         source /etc/set-environment
         ${pkgs.sunshine}/bin/sunshine
       '';
