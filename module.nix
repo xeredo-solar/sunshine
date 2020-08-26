@@ -56,7 +56,10 @@ in
 
       path = [ pkgs.sunshine config.nix.package ];
 
-      script = "${pkgs.sunshine}/bin/sunshine";
+      script = ''
+        source /etc/set-environment
+        ${pkgs.sunshine}/bin/sunshine
+      '';
 
       serviceConfig = {
         Restart = "on-failure";
