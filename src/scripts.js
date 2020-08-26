@@ -12,7 +12,12 @@ const scriptCtx = (options = {}) =>
     options
   })
 
-const scripts = scriptCtx()
+const scripts = scriptCtx({
+  env: Object.assign(Object.assign({}, process.env), {
+    HOME: '/root',
+    NIX_PATH: '/root/.nix-defexpr/channels'
+  })
+})
 
 const {
   read,
