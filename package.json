@@ -14,6 +14,7 @@
   "scripts": {
     "test": "mocha -A",
     "cov": "nyc mocha",
+    "start": "DEBUG=* node src/bin.js --config ./config.yaml",
     "lint": "eslint .",
     "fix": "eslint --fix ."
   },

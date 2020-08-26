@@ -25,3 +25,4 @@ user:
     silentPrepare: true # always trigger
     forceSilentPrepare: true # always trigger
 cooldownMsAfterBoot: 1 # immediatly run stuff
+storage: /tmp/sunhine
