@@ -15,7 +15,8 @@ const {
   nixosRebuild,
   getUsers,
   dryRunNixEnv,
-  upgradeNixEnv
+  upgradeNixEnv,
+  clear
 } = require('./scripts')
 
 const debug = require('debug')
@@ -152,9 +153,9 @@ async function systemUpgrade (storage, ui, control, { silentFetch, silentPrepare
         break
       }
       case 'end': {
-        if (state.prefetchClear) state.prefetchClear()
-        if (state.buildClear) state.buildClear()
-        if (state.drv) state.drv.clear()
+        clear(state.prefetchClear)
+        clear(state.buildClear)
+        clear(state.drv)
         ui.notify('update_ok', state.dry)
         log('clear upgrade state')
         storage.upgradeState = null
@@ -259,8 +260,8 @@ async function userUpgrade (storage, ui, control, { silentFetch, silentPrepare, 
         break
       }
       case 'end': {
-        if (state.prefetchClear) state.prefetchClear()
-        if (state.buildClear) state.buildClear()
+        clear(state.prefetchClear)
+        clear(state.buildClear)
         ui.notify('user_update_ok', state.dry)
         log('clear user upgrade state')
         storage[key] = null

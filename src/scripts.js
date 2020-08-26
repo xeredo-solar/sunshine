@@ -19,7 +19,8 @@ const {
   processDryRun,
   withTmp,
   mkTmp,
-  cacheTmp
+  cacheTmp,
+  clear
 } = require('./util')
 
 const users = {}
@@ -109,5 +110,7 @@ module.exports = {
     let out = await withTmp(p => scripts.df(loc, field, p))
     out = out.replace(/\n/g, '').trim()
     return isNum ? parseFloat(out, 10) : out
-  }
+  },
+
+  clear
 }

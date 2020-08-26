@@ -20,9 +20,15 @@ const mkTmp = folder => {
     mkdirp(tmpPath)
   }
 
+  function c () {
+    return rimraf(tmpPath)
+  }
+
+  c.toString = () => tmpPath
+
   return {
     p: tmpPath,
-    c: () => rimraf(tmpPath)
+    c
   }
 }
 
@@ -47,6 +53,12 @@ async function withTmp (fnc) {
   return out
 }
 
+function clear (thing) {
+  if (typeof thing === 'string') rimraf(thing)
+  else if (typeof thing === 'function') thing()
+  else if (typeof thing === 'object') clear(thing.clear)
+}
+
 module.exports = {
   read,
   mkTmp,
@@ -60,6 +72,7 @@ module.exports = {
       clear: tmp.c
     }
   },
+  clear,
   processDryRun (data) {
     const lines = data.split('\n').filter(d => Boolean(d.trim()))
 

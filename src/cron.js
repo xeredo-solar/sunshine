@@ -51,8 +51,12 @@ module.exports = function createTask (storage, taskId, taskInterval, taskFunctio
     log('%o success', taskId)
   }
 
+  if (!storage[taskId]) { // on first run, assign next cycle directly to storage
+    storage[taskId] = next()
+  }
+
   const task = {
-    next: storage[taskId] || next(),
+    next: storage[taskId],
     ping: () => {
       task.next = next()
       storage[taskId] = next()
