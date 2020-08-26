@@ -57,7 +57,7 @@ in
       path = [ pkgs.sunshine config.nix.package ];
 
       script = ''
-        source /etc/set-environment
+        source ${config.system.build.etc}/set-environment
         ${pkgs.sunshine}/bin/sunshine
       '';
 
