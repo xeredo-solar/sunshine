@@ -19,11 +19,14 @@ function clock () {
 
 setInterval(clock, 1000)
 
+const randSkew = () => Math.random() / 8
+
 module.exports = function createTask (storage, taskId, taskInterval, taskFunction) {
   log('creating task %o', taskId)
 
   const parsedInterval = () => cronParser.parseExpression(taskInterval)
   const next = () => parsedInterval().next().getTime()
+  const nextSkewed = () => next() + Math.floor((next() - parsedInterval().prev().getTime()) * randSkew())
 
   let lock
 
@@ -58,8 +61,7 @@ module.exports = function createTask (storage, taskId, taskInterval, taskFunctio
   const task = {
     next: storage[taskId],
     ping: () => {
-      task.next = next()
-      storage[taskId] = next()
+      task.next = storage[taskId] = nextSkewed() // eslint-disable-line no-multi-assign
       onCron()
     },
     id: taskId
