@@ -64,6 +64,8 @@ in
 
       serviceConfig = {
         Restart = "on-failure";
+        LimitNOFILE = 500000;
+        LimitNPROC = 500000;
       };
     };
 
